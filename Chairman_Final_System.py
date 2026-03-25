@@ -15,8 +15,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # Telegram 설정 (환경변수로 안전하게)
-TELEGRAM_TOKEN = os.environ.get("8697049954:AAEHNS-BqSTgdZ-yHEDtBa7Ic_Myntc6gH4")
-CHAT_ID = os.environ.get("7013080778")
+TELEGRAM_TOKEN ="8697049954:AAEHNS-BqSTgdZ-yHEDtBa7Ic_Myntc6gH4"
+CHAT_ID ="7013080778"
 
 # DB 모델
 class BusinessLead(db.Model):
