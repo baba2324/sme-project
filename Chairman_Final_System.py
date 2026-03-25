@@ -37,27 +37,27 @@ def fishing_bot():
     while True:
         time.sleep(3600)
 
-# HTML + JS
+# HTML + JS (구글 인증 암호 업데이트 완료!)
 HTML_PAGE = r"""
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta name="google-site-verification" content="google3dc40b0d81cb3aa1"> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <title>SME 통합지원센터 | Gemini AI 분석</title>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SME 통합지원센터</title>
-<style>
-body{background:#0f172a;color:white;font-family:sans-serif;margin:0;padding:0}
-h2{text-align:center;margin-top:80px;color:#fbbf24}
-p{text-align:center;margin-bottom:30px}
-.card{background:#1e293b;padding:25px;border-radius:20px;width:90%;max-width:420px;margin:auto;margin-top:50px}
-input, select{width:100%;padding:12px;margin:8px 0;background:#0f172a;border:1px solid #334155;color:white;border-radius:10px}
-button{background:#fbbf24;padding:15px;width:100%;font-weight:bold;border:none;border-radius:12px;font-size:16px;cursor:pointer}
-#popup{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85)}
-</style>
+    <meta name="google-site-verification" content="7wYB7t4zjKLuG9iF6CBmUB__l6Hor19ddgDPHk0UeAY" />
+    
+    <title>SME 통합지원센터 | 구글 AI 분석 서비스</title>
+    
+    <style>
+        body{background:#0f172a;color:white;font-family:sans-serif;margin:0;padding:0}
+        h2{text-align:center;margin-top:80px;color:#fbbf24}
+        p{text-align:center;margin-bottom:30px}
+        .card{background:#1e293b;padding:25px;border-radius:20px;width:90%;max-width:420px;margin:auto;margin-top:50px}
+        input, select{width:100%;padding:12px;margin:8px 0;background:#0f172a;border:1px solid #334155;color:white;border-radius:10px;box-sizing:border-box}
+        button{background:#fbbf24;padding:15px;width:100%;font-weight:bold;border:none;border-radius:12px;font-size:16px;cursor:pointer}
+        #popup{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999}
+    </style>
 </head>
 <body>
 
