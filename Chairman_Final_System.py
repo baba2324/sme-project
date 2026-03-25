@@ -42,6 +42,10 @@ HTML_PAGE = r"""
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<meta name="google-site-verification" content="google3dc40b0d81cb3aa1"> 
+    
+    <title>SME 통합지원센터 | Gemini AI 분석</title>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SME 통합지원센터</title>
