@@ -15,8 +15,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # Telegram 설정
-TELEGRAM_TOKEN = "8697049954:AAEHNS-BqSTgdZ-yHEDtBa7Ic_Myntc6gH4"
-CHAT_ID = 7013080778
+TELEGRAM_TOKEN = "8697049954:AAEHNS-BqSTgdZ-yHEDtBa7Ic_Myntc6gH4"  # 실제 토큰
+CHAT_ID = "7013080778"  # 실제 챗아이디
 
 # DB 모델
 class BusinessLead(db.Model):
@@ -26,13 +26,13 @@ class BusinessLead(db.Model):
     phone = db.Column(db.String(20), unique=True)
     revenue = db.Column(db.String(20))
     employees = db.Column(db.String(20))
-    youth_support = db.Column(db.String(10))
+    grants = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 with app.app_context():
     db.create_all()
 
-# 스케줄 스레드
+# 팝업 반복/스케줄 스레드 (확장 가능)
 def fishing_bot():
     while True:
         time.sleep(3600)
@@ -54,6 +54,7 @@ input, select{width:100%;padding:12px;margin:8px 0;background:#0f172a;border:1px
 button{background:#fbbf24;padding:15px;width:100%;font-weight:bold;border:none;border-radius:12px;font-size:16px;cursor:pointer}
 .btn-phone{display:block;background:#22c55e;padding:15px;margin-top:10px;text-align:center;border-radius:10px;color:white;font-weight:bold;text-decoration:none}
 #popup{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85)}
+.grant-btn{margin:5px;padding:10px;border-radius:10px;border:none;color:white;font-weight:bold;cursor:pointer}
 </style>
 </head>
 <body>
@@ -70,7 +71,6 @@ button{background:#fbbf24;padding:15px;width:100%;font-weight:bold;border:none;b
 <input id="owner" placeholder="대표자 성함">
 <input id="phone" placeholder="대표자 직통번호(숫자만)">
 <input id="revenue" placeholder="직전연도 대략 매출액(예: 20억)">
-
 <select id="employees">
     <option value="">직원 수 선택</option>
     <option value="5인미만">5인 미만</option>
@@ -78,23 +78,44 @@ button{background:#fbbf24;padding:15px;width:100%;font-weight:bold;border:none;b
     <option value="30인이상">30인 이상</option>
 </select>
 
-<select id="youth_support">
-    <option value="">청년지원금 해당 여부</option>
-    <option value="예">예</option>
-    <option value="아니오">아니오</option>
-</select>
+<p>지원금 선택 (해당되는 항목만 클릭)</p>
+<div class="btn-group"></div>
+<input type="hidden" id="selected_grants" value="">
 
 <button onclick="submitLead()">무료 분석 신청</button>
-
 <a href="tel:01098091609" class="btn-phone">📞 바로 상담하기</a>
 <button onclick="closePopup()" style="margin-top:10px;background:#334155;width:100%;padding:12px;border:none;border-radius:10px;">닫기</button>
 </div>
 </div>
 
 <script>
-window.onload=function(){setTimeout(()=>openPopup(),1000)}
+window.onload = function(){setTimeout(()=>openPopup(),1000)}
 function openPopup(){document.getElementById('popup').style.display='block'}
 function closePopup(){document.getElementById('popup').style.display='none'}
+
+const grants = ["청년지원금", "고용지원금", "R&D 지원금", "기타 정부지원금"];
+const container = document.querySelector('.btn-group');
+const hiddenInput = document.getElementById('selected_grants');
+let selected = [];
+
+// 버튼 자동 생성 + 클릭 처리
+grants.forEach(grant => {
+    const btn = document.createElement('button');
+    btn.textContent = grant;
+    btn.className = 'grant-btn';
+    btn.style.background = '#334155';
+    btn.addEventListener('click', () => {
+        if(selected.includes(grant)){
+            selected = selected.filter(g => g !== grant);
+            btn.style.background = '#334155';
+        } else {
+            selected.push(grant);
+            btn.style.background = '#fbbf24';
+        }
+        hiddenInput.value = selected.join(',');
+    });
+    container.appendChild(btn);
+});
 
 async function submitLead(){
     const data={
@@ -103,7 +124,7 @@ async function submitLead(){
         phone: document.getElementById('phone').value,
         revenue: document.getElementById('revenue').value,
         employees: document.getElementById('employees').value,
-        youth_support: document.getElementById('youth_support').value
+        grants: hiddenInput.value
     }
     const res = await fetch('/api/v1/submit',{
         method:'POST',
@@ -124,21 +145,20 @@ def home():
 @app.route('/api/v1/submit', methods=['POST'])
 def submit():
     data = request.json
-
     new = BusinessLead(
         biz_name=data.get('biz'),
         owner_name=data.get('owner'),
         phone=data.get('phone'),
         revenue=data.get('revenue'),
         employees=data.get('employees'),
-        youth_support=data.get('youth_support')
+        grants=data.get('grants')
     )
     db.session.add(new)
     db.session.commit()
 
     # Telegram 알림
     if TELEGRAM_TOKEN and CHAT_ID:
-        msg = f"🚨 신규 DB\n기업명: {data.get('biz')}\n전화: {data.get('phone')}\n매출: {data.get('revenue')}\n직원: {data.get('employees')}\n청년지원금: {data.get('youth_support')}"
+        msg = f"🚨 신규 DB\n기업명: {data.get('biz')}\n전화: {data.get('phone')}\n매출: {data.get('revenue')}\n직원: {data.get('employees')}\n선택 지원금: {data.get('grants')}"
         requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
                       json={"chat_id": CHAT_ID, "text": msg})
 
