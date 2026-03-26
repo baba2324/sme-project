@@ -126,6 +126,20 @@ async function submitLead(){
 def home():
     return render_template_string(HTML_PAGE)
 
+# 구글 로봇을 위한 사이트맵 생성 코드
+@app.route('/sitemap.xml')
+def sitemap():
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+        <url>
+            <loc>https://sme-project.onrender.com/</loc>
+            <lastmod>2026-03-26</lastmod>
+            <changefreq>daily</changefreq>
+            <priority>1.0</priority>
+        </url>
+    </urlset>"""
+    return xml, 200, {'Content-Type': 'application/xml'}
+
 @app.route('/api/v1/submit', methods=['POST'])
 def submit():
     data = request.json
